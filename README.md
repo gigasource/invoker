@@ -64,6 +64,11 @@ public class App {
 }
 ```
 
+### Reflection unseal
+From Android Pie, Android hide a lot of method so we cannot explore by Reflection.<br/>
+Install `me.weishu:free_reflection` package to unseal hidden stuff.
+
+
 ### Roadmap
 1. Improve method, ctor matching algorithm to allow passing parameters as normal use.
 The following code won't work:
