@@ -1,6 +1,7 @@
 package io.gigasource.invoker;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -42,6 +43,14 @@ public class Invoker {
         throw new NoSuchMethodException(cls.getCanonicalName() + " doens't have constructor with provided args.");
     }
 
+    /**
+     * Invoke method of specified class with params
+     * @param cls
+     * @param method
+     * @param args
+     * @return
+     * @throws Exception
+     */
     public static Object invoke(Class<?> cls, String method, Object... args) throws Exception {
         ReflectionCache c = get(cls);
         Class<?>[] types = TypeUtils.getTypes(args);
@@ -71,6 +80,59 @@ public class Invoker {
         }
 
         throw new NoSuchMethodException(cls.getCanonicalName() + " don't have method " + method + " with provided arguments");
+    }
+
+    /**
+     * Get field of current class
+     * @param cls
+     * @param fieldName
+     * @return
+     * @throws Exception
+     */
+    public static Field fieldInfo(Class<?> cls, String fieldName) throws Exception {
+        ReflectionCache c = get(cls);
+        if (c.fields.containsKey(fieldName)) {
+            return c.fields.get(fieldName);
+        }
+        Field field = cls.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        c.fields.put(fieldName, field);
+        return field;
+    }
+
+    /**
+     * Get field value
+     * @param cls
+     * @param fieldName
+     * @param target
+     * @return
+     * @throws Exception
+     */
+    public static Object field(Class<?> cls, String fieldName, Object target) throws Exception {
+        return fieldInfo(cls, fieldName).get(target);
+    }
+
+    /**
+     * Get nested class of current class
+     * @param cls current class
+     * @param className nested class name
+     * @return Nested class or null
+     */
+    public static Object cls(Class<?> cls, String className) {
+        ReflectionCache c = get(cls);
+        if (c.clss.containsKey(className)) {
+            return c.clss.get(className);
+        }
+
+        Class<?>[] nestClasses = cls.getDeclaredClasses();
+        for(Class<?> nestCls : nestClasses) {
+            if (nestCls.getName().equals(className)) {
+                c.clss.put(className, nestCls);
+                return nestCls;
+            }
+        }
+
+        return null;
     }
 
     /**
